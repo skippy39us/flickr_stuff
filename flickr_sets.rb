@@ -20,6 +20,7 @@ username = "skippy39us"
 # return a hash of the info regarding username
 def get_user_info(debug, username) 
 	info = flickr.people.findByUsername :username => 'skippy39us'
+	if debug.eql? 1 then puts info.inspect end 
 	return info 
 end 
 
