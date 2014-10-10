@@ -58,7 +58,7 @@ end
 # Given a photoset, return list of photos. 
 def get_photo_list(debug, set_id) 
 	photo_list = flickr.photosets.getPhotos(:photoset_id => set_id)
-	if debug.eql? 1 then puts photo_list.inspect 
+	if debug.eql? 1 then puts photo_list.inspect end
 	return photo_list
 end 
 
