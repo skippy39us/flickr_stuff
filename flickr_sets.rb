@@ -77,6 +77,20 @@ def upload_photo(debug, photo, title, description)
 end 
 
 
+####
+# Create a checksum of a file 
+def checksum_photo(debug, photo)
+	#####
+	# So we read the file, and then create a checksum. 
+	# We can then use that checksum to tag the photo when we upload it to flickr. 
+	#	Like this: 
+	#		flickr.photos.addTags(:photo_id => photo.id, :tags => checksum)
+
+	checksum = Digest::MD5.hexdigest(File.read(photo))
+	return checksum 
+end
+
+
 
 #set_exists = false 
 #create_photoset = false 
