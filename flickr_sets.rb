@@ -93,6 +93,7 @@ def checksum_photo(debug, photo)
 	#		flickr.photos.addTags(:photo_id => photo.id, :tags => checksum)
 
 	checksum = Digest::SHA1.hexdigest(File.read(photo))
+	if debug.eql? 1 then puts "DEBUG: #{photo} sha: #{checksum}" end 
 	return checksum 
 end
 
