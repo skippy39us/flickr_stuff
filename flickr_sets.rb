@@ -3,7 +3,7 @@
 require 'flickraw'
 require 'find'
 require './flickr_init' 
-
+require 'digest/sha1'
 
 debug = 1
 #####
@@ -66,6 +66,12 @@ end
 ####
 # Given a photo and a set, does it exist already? 
 def photo_exist?(debug, photo, set) 
+	### 
+	# compare sha of photo with the sha tag of EVERY photo that we've
+	# already uploaded. 
+	# return true if that sha already exits as a tag. 
+	# return false if it dunna. 
+		
 end 
 
 
@@ -86,7 +92,7 @@ def checksum_photo(debug, photo)
 	#	Like this: 
 	#		flickr.photos.addTags(:photo_id => photo.id, :tags => checksum)
 
-	checksum = Digest::MD5.hexdigest(File.read(photo))
+	checksum = Digest::SHA1.hexdigest(File.read(photo))
 	return checksum 
 end
 
