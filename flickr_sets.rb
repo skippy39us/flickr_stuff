@@ -3,7 +3,7 @@
 require 'flickraw'
 require 'find'
 require './flickr_init' 
-
+require 'digest/sha1'
 
 debug = 1
 #####
@@ -20,7 +20,7 @@ username = "skippy39us"
 # return a hash of the info regarding username
 def get_user_info(debug, username) 
 	info = flickr.people.findByUsername :username => 'skippy39us'
-	if debug.eql? 1 then puts info.inspect end 
+	if debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
 end 
 
@@ -49,9 +49,39 @@ end
 
 ####
 # Given a user, return a list of all photos
-def get_all_photos(debug, username)
-	all_photos = flickr.people.getPhotos(:user_id => username)
+def get_all_photos(debug, userid)
+
+	all_photos = [] 
+	
+	####
+	# Note that this only gives 100 photos at a time. We can change that
+	# to a maximum of 500 per page.  We have 
+	# to iterate through every 'page' of photoso that flickr has for us, 
+	# each time increasing the page number.  I wonder how I can get the maximum
+	# number of pages. 
+
+	####
+	# set this to a non empty array with nothing in it.. :-D 
+	current_page_photos = ["empty"] 
+
+	####
+	# our current page of photos
+	page = 0 
+	
+
+	####
+	# While the current page has more than 0 pictures on it, essentially
+	while current_page_photos.length > 0 	
+		page = page + 1
+		current_page_photos = flickr.photos.search(:user_id => userid, :per_page => '500', :page => page) 
+
+		####
+		# Add those photos to the list of previously aquired photos. 
+		all_photos << current_page_photos
+	end 		
+	
 	if debug.eql? 1 then puts all_photos.inspect end 
+	return all_photos
 end
 
 ####
@@ -71,8 +101,10 @@ end
 
 ####
 # upload a photo and return the photo id
-def upload_photo(debug, photo, title, description) 
+def upload_photo(debug, photo, title, description, tags) 
 
+	photo_id = flickr.upload_photo photo, :title => title, :description => description, :tags => tags
+	if debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
 	return  photo_id
 end 
 
@@ -86,7 +118,8 @@ def checksum_photo(debug, photo)
 	#	Like this: 
 	#		flickr.photos.addTags(:photo_id => photo.id, :tags => checksum)
 
-	checksum = Digest::MD5.hexdigest(File.read(photo))
+	checksum = Digest::SHA1.hexdigest(File.read(photo))
+	if debug.eql? 1 then puts "DEBUG: checksum for #{photo} is #{checksum}" end 
 	return checksum 
 end
 
