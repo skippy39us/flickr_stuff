@@ -96,6 +96,12 @@ end
 ####
 # Given a photo and a set, does it exist already? 
 def photo_exist?(debug, photo, set) 
+	### 
+	# compare sha of photo with the sha tag of EVERY photo that we've
+	# already uploaded. 
+	# return true if that sha already exits as a tag. 
+	# return false if it dunna. 
+		
 end 
 
 
