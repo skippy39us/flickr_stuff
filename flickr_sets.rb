@@ -35,6 +35,7 @@ def get_tags(debug, photo_id)
 	# there's alot of metadata that is stored with the tags for each
 	# photo
 	tag_info = flickr.tags.getListPhoto(:photo_id => 'photo_id')
+	if debug.eql? 1 then puts "DEBUG: tag_info = #{tag_info.inspect}" end 
 
 	####
 	# Lets go through all of the tag data for this photo id, and 
@@ -43,6 +44,7 @@ def get_tags(debug, photo_id)
 	tag_info["tags"].each do |meta_tag|  
 		tags < meta_tag["_content"]	
 	end 
+	if debug.eql? 1 then puts "DEBUG: tags = #{tags.inspect}" end
 	return tags 
 end
 	
