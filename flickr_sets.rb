@@ -19,11 +19,33 @@ username = "skippy39us"
 ####
 # return a hash of the info regarding username
 def get_user_info(debug, username) 
-	info = flickr.people.findByUsername :username => 'skippy39us'
+	info = flickr.people.findByUsername :username => username
 	if debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
 end 
 
+
+###
+# return a list of tags for a photo
+def get_tags(debug, photo_id)
+	#####
+	# tags is an empty array at first
+	tags = []
+	####
+	# there's alot of metadata that is stored with the tags for each
+	# photo
+	tag_info = flickr.tags.getListPhoto(:photo_id => 'photo_id')
+
+	####
+	# Lets go through all of the tag data for this photo id, and 
+	# just spit out the tags themselves. I think thats all we 
+	# care about. 
+	tag_info["tags"].each do |meta_tag|  
+		tags < meta_tag["_content"]	
+	end 
+	return tags 
+end
+	
 
 ####
 # return a list of photosets
@@ -56,7 +78,7 @@ def get_all_photos(debug, userid)
 	####
 	# Note that this only gives 100 photos at a time. We can change that
 	# to a maximum of 500 per page.  We have 
-	# to iterate through every 'page' of photoso that flickr has for us, 
+	# to iterate through every 'page' of photos that flickr has for us, 
 	# each time increasing the page number.  I wonder how I can get the maximum
 	# number of pages. 
 
@@ -186,11 +208,12 @@ end
 #end	
 
 
-get_photo_sets(debug) 
+info = get_user_info(debug, username) 
+#get_photo_sets(debug) 
 puts
 puts "#####"
 
 
-info = get_user_info(debug, username) 
-
-get_all_photos(debug, info["id"])
+####
+# This is every photo that we have. 
+all_photos = get_all_photos(debug, info["id"])
