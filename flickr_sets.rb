@@ -1,6 +1,7 @@
 #!/usr/bin/env ruby 
 
 require 'flickraw'
+require 'digest/sha1'
 require 'find'
 require './flickr_init' 
 require 'digest/sha1'
@@ -96,6 +97,7 @@ def get_all_photos(debug, userid)
 	####
 	# While the current page has more than 0 pictures on it, essentially
 	while current_page_photos.length > 0 	
+		if debug.eql? 1 then puts "DEBUG: Page #{page}" end 
 		page = page + 1
 		current_page_photos = flickr.photos.search(:user_id => userid, :per_page => '500', :page => page) 
 
@@ -132,10 +134,11 @@ end
 ####
 # upload a photo and return the photo id
 def upload_photo(debug, photo, title, description, tags) 
-
+	
 	photo_id = flickr.upload_photo photo, :title => title, :description => description, :tags => tags
 	if debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
 	return  photo_id
+
 end 
 
 
