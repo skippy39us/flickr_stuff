@@ -6,7 +6,7 @@ require 'find'
 require './flickr_init' 
 require 'digest/sha1'
 
-debug = 1
+@debug = 1
 #####
 # Base upload directory
 base_dir = "/stuff/Pictures/2012"
@@ -19,7 +19,7 @@ username = "skippy39us"
 
 ####
 # return a hash of the info regarding username
-def get_user_info(debug, username) 
+def get_user_info(username) 
 	info = flickr.people.findByUsername :username => username
 	if debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
@@ -28,7 +28,7 @@ end
 
 ###
 # return a list of tags for a photo
-def get_tags(debug, photo_id)
+def get_tags(photo_id)
 	#####
 	# tags is an empty array at first
 	tags = []
@@ -52,7 +52,7 @@ end
 
 ####
 # return a list of photosets
-def get_photo_sets(debug)
+def get_photo_sets()
 	####
 	# Get list of all photosets - in an array
 	photosets = flickr.photosets.getList
@@ -74,7 +74,7 @@ end
 
 ####
 # Given a user, return a list of all photos
-def get_all_photos(debug, userid)
+def get_all_photos(userid)
 
 	all_photos = [] 
 	
@@ -112,7 +112,7 @@ end
 
 ####
 # Given a photoset, return list of photos. 
-def get_photo_list(debug, set_id) 
+def get_photo_list(set_id) 
 	photo_list = flickr.photosets.getPhotos(:photoset_id => set_id)
 	if debug.eql? 1 then puts photo_list.inspect end
 	return photo_list
@@ -121,7 +121,7 @@ end
 
 ####
 # Given a photo and a set, does it exist already? 
-def photo_exist?(debug, photo, set) 
+def photo_exist?(photo, set) 
 	### 
 	# compare sha of photo with the sha tag of EVERY photo that we've
 	# already uploaded. 
@@ -133,7 +133,7 @@ end
 
 ####
 # upload a photo and return the photo id
-def upload_photo(debug, photo, title, description, tags) 
+def upload_photo(photo, title, description, tags) 
 	
 	photo_id = flickr.upload_photo photo, :title => title, :description => description, :tags => tags
 	if debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
@@ -144,7 +144,7 @@ end
 
 ####
 # Create a checksum of a file 
-def checksum_photo(debug, photo)
+def checksum_photo(photo)
 	#####
 	# So we read the file, and then create a checksum. 
 	# We can then use that checksum to tag the photo when we upload it to flickr. 
@@ -213,7 +213,7 @@ end
 #end	
 
 
-info = get_user_info(debug, username) 
+info = get_user_info(username) 
 #get_photo_sets(debug) 
 puts
 puts "#####"
@@ -221,4 +221,4 @@ puts "#####"
 
 ####
 # This is every photo that we have. 
-all_photos = get_all_photos(debug, info["id"])
+all_photos = get_all_photos(info["id"])
