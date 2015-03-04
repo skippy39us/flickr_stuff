@@ -107,6 +107,17 @@ def get_all_photos(userid)
 	end 		
 	
 	if debug.eql? 1 then puts all_photos.inspect end 
+
+	#####
+	# It would be cool if we could generate a data structure that included the TAGS as keys, pointing the pic that
+	# used that tag.  Since most of our tags will be unique, this will work. If a tag DOES repeat
+	# (in a non-sha tag, for example) then we can just have an array of photos that the tag applies to. 
+	# this is a little backwards, but i think it will work. Do it here, before returning all_photos.
+
+
+	#
+	#
+	####
 	return all_photos
 end
 
@@ -121,13 +132,17 @@ end
 
 ####
 # Given a photo and a set, does it exist already? 
-def photo_exist?(photo, set) 
+def photo_exist?(photo) 
 	### 
 	# compare sha of photo with the sha tag of EVERY photo that we've
 	# already uploaded. 
+	# 	how do we do that? 
+	# 		 
 	# return true if that sha already exits as a tag. 
 	# return false if it dunna. 
-		
+	sha = checksum_photo(photo) 
+	####
+	# 	
 end 
 
 
@@ -222,3 +237,8 @@ puts "#####"
 ####
 # This is every photo that we have. 
 all_photos = get_all_photos(info["id"])
+
+
+####
+# Suppose we start a new 'sync' of our photo directory to flickr.  We don't want to generate a checksum for EVERY file, every
+# time, do we? There should be files that we KNOW are there. Hmmm,....
