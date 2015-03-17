@@ -5,6 +5,7 @@ require 'digest/sha1'
 require 'find'
 require './flickr_init' 
 require 'digest/sha1'
+require 'yaml'
 
 @debug = 1
 #####
@@ -21,7 +22,7 @@ username = "skippy39us"
 # return a hash of the info regarding username
 def get_user_info(username) 
 	info = flickr.people.findByUsername :username => username
-	if debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
+	if @debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
 end 
 
@@ -36,7 +37,7 @@ def get_tags(photo_id)
 	# there's alot of metadata that is stored with the tags for each
 	# photo
 	tag_info = flickr.tags.getListPhoto(:photo_id => 'photo_id')
-	if debug.eql? 1 then puts "DEBUG: tag_info = #{tag_info.inspect}" end 
+	if @debug.eql? 1 then puts "DEBUG: tag_info = #{tag_info.inspect}" end 
 
 	####
 	# Lets go through all of the tag data for this photo id, and 
@@ -45,7 +46,8 @@ def get_tags(photo_id)
 	tag_info["tags"].each do |meta_tag|  
 		tags < meta_tag["_content"]	
 	end 
-	if debug.eql? 1 then puts "DEBUG: tags = #{tags.inspect}" end
+	if @debug.eql? 1 then puts "DEBUG: tags = #{tags.inspect}" end
+
 	return tags 
 end
 	
@@ -65,7 +67,7 @@ def get_photo_sets()
 		photoset_titles << current_set["title"]
 	end
 
-	if debug.eql? 1 then puts photoset_titles.inspect end
+	if @debug.eql? 1 then puts photoset_titles.inspect end
 
 	return photoset_titles
 
@@ -97,7 +99,7 @@ def get_all_photos(userid)
 	####
 	# While the current page has more than 0 pictures on it, essentially
 	while current_page_photos.length > 0 	
-		if debug.eql? 1 then puts "DEBUG: Page #{page}" end 
+		if @debug.eql? 1 then puts "DEBUG: Page #{page}" end 
 		page = page + 1
 		current_page_photos = flickr.photos.search(:user_id => userid, :per_page => '500', :page => page) 
 
@@ -106,7 +108,7 @@ def get_all_photos(userid)
 		all_photos << current_page_photos
 	end 		
 	
-	if debug.eql? 1 then puts all_photos.inspect end 
+	if @debug.eql? 1 then puts all_photos.inspect end 
 
 	#####
 	# It would be cool if we could generate a data structure that included the TAGS as keys, pointing the pic that
@@ -125,7 +127,7 @@ end
 # Given a photoset, return list of photos. 
 def get_photo_list(set_id) 
 	photo_list = flickr.photosets.getPhotos(:photoset_id => set_id)
-	if debug.eql? 1 then puts photo_list.inspect end
+	if @debug.eql? 1 then puts photo_list.inspect end
 	return photo_list
 end 
 
@@ -151,7 +153,7 @@ end
 def upload_photo(photo, title, description, tags) 
 	
 	photo_id = flickr.upload_photo photo, :title => title, :description => description, :tags => tags
-	if debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
+	if @debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
 	return  photo_id
 
 end 
@@ -167,7 +169,7 @@ def checksum_photo(photo)
 	#		flickr.photos.addTags(:photo_id => photo.id, :tags => checksum)
 
 	checksum = Digest::SHA1.hexdigest(File.read(photo))
-	if debug.eql? 1 then puts "DEBUG: checksum for #{photo} is #{checksum}" end 
+	if @debug.eql? 1 then puts "DEBUG: checksum for #{photo} is #{checksum}" end 
 	return checksum 
 end
 
@@ -242,3 +244,10 @@ all_photos = get_all_photos(info["id"])
 ####
 # Suppose we start a new 'sync' of our photo directory to flickr.  We don't want to generate a checksum for EVERY file, every
 # time, do we? There should be files that we KNOW are there. Hmmm,....
+#####
+# YAML stuff
+#user_access_list_yaml = YAML.dump(user_access_list)
+#yamlfile = File.open("#{cachedir}/#{md5hash}", 'w')
+#yamlfile.puts user_access_list_yaml
+
+
