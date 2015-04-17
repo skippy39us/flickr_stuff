@@ -201,6 +201,12 @@ def process_directory(current_dir)
 	####
 	# Upload the photos. 
 	
+	####
+	# Check if the photo exists with photo_exists? method
+
+
+	####
+	# if it does not exist, upload it using the upload_photo method. 
 end 	
 
 #set_exists = false 
