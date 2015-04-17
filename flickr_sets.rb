@@ -174,6 +174,34 @@ def checksum_photo(photo)
 end
 
 
+####
+# Process a directory of photos
+def process_directory(current_dir)
+	####
+	# Get the photosets
+	photoset_titles = get_photo_sets()	 
+	
+	# Now we have the photosets
+	####
+	
+
+	####
+	# Now what do we do? 
+	####
+	# see if we have a set called 'current_dir'
+	unless photoset_titles.include? current_dir 
+		puts "Creating #{current_dir} photoset!"
+		create_photoset = true
+		set_exists = false 
+	else 
+		puts "#{current_dir} photoset already exists!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
+		set_exists = true
+	end
+
+	####
+	# Upload the photos. 
+	
+end 	
 
 #set_exists = false 
 #create_photoset = false 
