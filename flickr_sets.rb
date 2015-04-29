@@ -200,10 +200,16 @@ def process_directory(current_dir)
 
 	####
 	# Upload the photos. 
+
+	# 	Check if the photo exists with photo_exists? method
+	# 	if it does not exist in flickr, we can upload it. 
+
+	# 	here's what we do (we just need the name of the photo, which we will also use as
+	# 	the title, and description. We'll need to generate the tag, as well, which will 
+	# 	be the hash. hmmm....
+	#		upload_photo(photo, title, description, tags) 
 	
 	####
-	# Check if the photo exists with photo_exists? method
-
 
 	####
 	# if it does not exist, upload it using the upload_photo method. 
