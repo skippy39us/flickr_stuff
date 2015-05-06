@@ -62,14 +62,14 @@ def get_photo_sets()
 	####
 	# List each photoset title
 
-	photoset_titles = []
-	photosets.each do |current_set|
-		photoset_titles << current_set["title"]
-	end
+	#photoset_titles = []
+	#photosets.each do |current_set|
+	#	photoset_titles << current_set["title"]
+	#end
 
-	if @debug.eql? 1 then puts photoset_titles.inspect end
+	#if @debug.eql? 1 then puts photoset_titles.inspect end
 
-	return photoset_titles
+	return photosets
 
 end 
 
@@ -150,14 +150,25 @@ end
 
 ####
 # upload a photo and return the photo id
-def upload_photo(photo, title, description, tags) 
+def upload_photo(photo, title, description, tags, create_photo, current_dir) 
 	
 	photo_id = flickr.upload_photo photo, :title => title, :description => description, :tags => tags
 	if @debug.eql? 1 then puts "DEBUG: photo_id = #{photo_id}" end
+
+				
+	####
+	# Move the photo into the appropriate photoset. 
+
+	
 	return  photo_id
 
 end 
 
+
+def add_photo_to_set(photo_id, current_photoset_id) 
+	#if @debug.eql? 1 then puts "DEBUG: putting #{photo} with id:#{photo_id} into set #{current_dir} with id: #{current_photoset_id}" end  
+	flickr.photosets.addPhoto :photoset_id => current_photoset_id, :photo_id => photo_id
+end 
 
 ####
 # Create a checksum of a file 
@@ -174,46 +185,87 @@ def checksum_photo(photo)
 end
 
 
+def create_photoset(current_dir, photo_id)
+	current_photoset_hash = flickr.photosets.create :title => current_dir, :description => current_dir, :primary_photo_id => photo_id
+	current_photoset_id = current_photoset_hash["id"]
+	return current_photoset_id
+end
+
 ####
 # Process a directory of photos
-def process_directory(current_dir)
+def process_directory(base_dir)
+	create_photoset = true
+	current_photoset_id = ""
 	####
 	# Get the photosets
-	photoset_titles = get_photo_sets()	 
-	
+	if debug.eql? 1 then puts "DEBUG: processing #{current_dir}" end 
+	photosets = get_photo_sets()	 
+
+	photoset_ids = []
+	photoset_titles = []
+	photosets.each do |current_set|
+		photoset_titles << current_set["title"]
+		photoset_ids    << current_set["id"]
+	end
+
+
+
 	# Now we have the photosets
 	####
 	
+	Find.find(base_dir) do |current_file|
+		if File.directory?(current_file)
+			####
+			# seperate the name of the directory only. We can use this as our photo_set name. :-) 
+			current_dir = current_file.split('/').last
+			####
+			# see if we have a set called 'current_dir'
 
-	####
-	# Now what do we do? 
-	####
-	# see if we have a set called 'current_dir'
-	unless photoset_titles.include? current_dir 
-		puts "Creating #{current_dir} photoset!"
-		create_photoset = true
-		set_exists = false 
-	else 
-		puts "#{current_dir} photoset already exists!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!!"
-		set_exists = true
-	end
+			photosets.each do |current_set|
+				if current_set.title.eql? current_dir 
+					puts "#{current_dir} photoset exists!"
+					create_photoset = false
+					current_photoset_id = current_set.id
+				end 
+			end 
 
-	####
-	# Upload the photos. 
+		else 
 
-	# 	Check if the photo exists with photo_exists? method
-	# 	if it does not exist in flickr, we can upload it. 
-
-	# 	here's what we do (we just need the name of the photo, which we will also use as
-	# 	the title, and description. We'll need to generate the tag, as well, which will 
-	# 	be the hash. hmmm....
-	#		upload_photo(photo, title, description, tags) 
+			####
+			# Upload the photos. 
 	
-	####
+			# 	Check if the photo exists with photo_exists? method
+			# 	if it does not exist in flickr, we can upload it. 
+	
+			# 	here's what we do (we just need the name of the photo, which we will also use as
+			# 	the title, and description. We'll need to generate the tag, as well, which will 
+			# 	be the hash. hmmm....
+			#		upload_photo(photo, title, description, tags) 
 
-	####
-	# if it does not exist, upload it using the upload_photo method. 
-end 	
+
+			#####
+			# here are the tags.  Right now its just a checksum.
+			tags = [] 
+			tags <<  checksum_photo(current_file)
+			
+			
+				
+			photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
+			if create_photoset.eql? true
+				current_photoset_id = create_photoset(current_dir, photo_id) 
+			end 	
+
+		
+			####
+			# add photo to a set.  	
+			add_photo_to_set(photo_id, current_photoset_id) 
+
+		
+			####
+			# if it does not exist, upload it using the upload_photo method. 
+		end
+	end 	
+end 
 
 #set_exists = false 
 #create_photoset = false 
