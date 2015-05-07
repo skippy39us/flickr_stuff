@@ -14,7 +14,7 @@ base_dir = "/stuff/Pictures/2012"
 
 
 #####
-# username whose photos we're messing with 
+# username whose photos we're messing with re '
 username = "skippy39us"
 
 
@@ -25,6 +25,14 @@ def get_user_info(username)
 	if @debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
 end 
+
+####
+# Suck in the yaml of checksums, if it exists
+checksum_hash = {}
+if File.exists?("/home/seidenbt/flickr_yaml")
+	checksums = YAML.load_file("/home/seidenbt/flickr_yaml")	
+end 
+		
 
 
 ###
@@ -184,7 +192,8 @@ def checksum_photo(photo)
 	return checksum 
 end
 
-
+####
+# Create a photoset and return the photoset id. 
 def create_photoset(current_dir, photo_id)
 	current_photoset_hash = flickr.photosets.create :title => current_dir, :description => current_dir, :primary_photo_id => photo_id
 	current_photoset_id = current_photoset_hash["id"]
@@ -214,9 +223,11 @@ def process_directory(base_dir)
 	####
 	
 	Find.find(base_dir) do |current_file|
+		full_path = ""
 		if File.directory?(current_file)
 			####
 			# seperate the name of the directory only. We can use this as our photo_set name. :-) 
+			full_path = current_file
 			current_dir = current_file.split('/').last
 			####
 			# see if we have a set called 'current_dir'
@@ -246,10 +257,17 @@ def process_directory(base_dir)
 			#####
 			# here are the tags.  Right now its just a checksum.
 			tags = [] 
-			tags <<  checksum_photo(current_file)
-			
-			
+
+			current_checksum = checksum_photo(current_file) 
+
+			tags <<  current_checksum
+		
 				
+			
+			#####
+			# add the current photo and its hash to the checksum_hash. This may be wrong, i fear. 	
+			checksum_hash[full_path][current_file] = current_checksum
+
 			photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
 			if create_photoset.eql? true
 				current_photoset_id = create_photoset(current_dir, photo_id) 
@@ -266,6 +284,26 @@ def process_directory(base_dir)
 		end
 	end 	
 end 
+
+####
+# Suppose we start a new 'sync' of our photo directory to flickr.  We don't want to generate a checksum for EVERY file, every
+# time, do we? There should be files that we KNOW are there. Hmmm,....
+#
+# In theory, there can only be unique photo file names in any directory. So if we keep a yaml of a hash of directory name keys
+# which point to hashes of photo filename -> checksum values, we should be able to tell if we need to create a checksum for a file
+# in question.  Yeah. 
+
+
+#####
+# YAML stuff
+#user_access_list_yaml = YAML.dump(user_access_list)
+#yamlfile = File.open("#{cachedir}/#{md5hash}", 'w')
+#yamlfile.puts user_access_list_yaml
+#yamlfile.close 
+#YAML.load_file("/path/to/yaml_file")
+
+
+
 
 #set_exists = false 
 #create_photoset = false 
@@ -331,15 +369,5 @@ puts "#####"
 ####
 # This is every photo that we have. 
 all_photos = get_all_photos(info["id"])
-
-
-####
-# Suppose we start a new 'sync' of our photo directory to flickr.  We don't want to generate a checksum for EVERY file, every
-# time, do we? There should be files that we KNOW are there. Hmmm,....
-#####
-# YAML stuff
-#user_access_list_yaml = YAML.dump(user_access_list)
-#yamlfile = File.open("#{cachedir}/#{md5hash}", 'w')
-#yamlfile.puts user_access_list_yaml
 
 
