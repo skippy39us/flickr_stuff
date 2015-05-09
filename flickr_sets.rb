@@ -227,8 +227,12 @@ def process_directory(base_dir)
 		if File.directory?(current_file)
 			####
 			# seperate the name of the directory only. We can use this as our photo_set name. :-) 
+			###
+			# obviously, full_path is just that.
 			full_path = current_file
-			current_dir = current_file.split('/').last
+			####
+			# this is the current directory. 
+			current_dir = current_file.split('/')
 			####
 			# see if we have a set called 'current_dir'
 
@@ -241,6 +245,8 @@ def process_directory(base_dir)
 			end 
 
 		else 
+			####
+			# We are dealing with an actual file.
 
 			####
 			# Upload the photos. 
@@ -254,6 +260,12 @@ def process_directory(base_dir)
 			#		upload_photo(photo, title, description, tags) 
 
 
+			####
+			# Go through each of the checksum_hash keys, and see if any of them refer
+			# to a filename that equals current_file. If it _DOES_ have a match, 
+			# check the mtime of current_file, and compare it to 
+			# checksum_hash[current_checksum][:mod_time]. If the mtimes are different
+			# take a new checksum. if they aren't, then we don't have to upload the file. 
 			#####
 			# here are the tags.  Right now its just a checksum.
 			tags = [] 
@@ -264,9 +276,14 @@ def process_directory(base_dir)
 		
 				
 			
+			
 			#####
 			# add the current photo and its hash to the checksum_hash. This may be wrong, i fear. 	
-			checksum_hash[full_path][current_file] = current_checksum
+			#checksum_hash[full_path][current_file] = current_checksum
+			if checksum_hash[current_checksum].nil? then checksum_hash[current_checksum] = {} end 
+				
+			checksum_hash[current_checksum][:current_file] = current_file
+			checksum_hash[current_checksum][:mod_time] = File.mtime(current_file)
 
 			photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
 			if create_photoset.eql? true
@@ -292,6 +309,11 @@ end
 # In theory, there can only be unique photo file names in any directory. So if we keep a yaml of a hash of directory name keys
 # which point to hashes of photo filename -> checksum values, we should be able to tell if we need to create a checksum for a file
 # in question.  Yeah. 
+#
+#
+# Actually, lets try checksum => filename hashes. How do we do that? 
+
+
 
 
 #####
