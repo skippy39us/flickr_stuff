@@ -30,7 +30,7 @@ end
 # Suck in the yaml of checksums, if it exists
 checksum_hash = {}
 if File.exists?("/home/seidenbt/flickr_yaml")
-	checksums = YAML.load_file("/home/seidenbt/flickr_yaml")	
+	checksum_hash = YAML.load_file("/home/seidenbt/flickr_yaml")	
 end 
 		
 
@@ -262,10 +262,39 @@ def process_directory(base_dir)
 
 			####
 			# Go through each of the checksum_hash keys, and see if any of them refer
-			# to a filename that equals current_file. If it _DOES_ have a match, 
+			# to a filename that equals current_file. 
+
+			# If there are no filename matches, take a new checksum
+
+			# If it _DOES_ have a match, 
 			# check the mtime of current_file, and compare it to 
-			# checksum_hash[current_checksum][:mod_time]. If the mtimes are different
-			# take a new checksum. if they aren't, then we don't have to upload the file. 
+			# checksum_hash[current_checksum][:mod_time]. 
+
+			# If the mtimes are different  take a new checksum. 
+
+			# if they aren't, then we don't have to upload the file. 
+			####
+			# basically assigns the matching sub-hash to match if the current_file
+			# is already in place. 
+
+
+			########
+			########
+			########
+		
+			match = checksum_hash{|key, hash| hash[:current_file] == current_file}
+			if match.empty?
+				# we need to populate the hash. 
+				
+			else 
+				mtime_match = checksum_hash{|key, hash| hash[:mod_time] == File.mtime(current_file)
+				if mtime_match.empty? 
+					# we have a new modtime. 
+				end
+			end 
+				
+				
+
 			#####
 			# here are the tags.  Right now its just a checksum.
 			tags = [] 
@@ -279,7 +308,7 @@ def process_directory(base_dir)
 			
 			#####
 			# add the current photo and its hash to the checksum_hash. This may be wrong, i fear. 	
-			#checksum_hash[full_path][current_file] = current_checksum
+			
 			if checksum_hash[current_checksum].nil? then checksum_hash[current_checksum] = {} end 
 				
 			checksum_hash[current_checksum][:current_file] = current_file
