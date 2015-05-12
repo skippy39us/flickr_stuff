@@ -284,12 +284,26 @@ def process_directory(base_dir)
 		
 			match = checksum_hash{|key, hash| hash[:current_file] == current_file}
 			if match.empty?
-				# we need to populate the hash. 
-				
+				# we need to populate a new checksum key. 
+				new_checksum = checksum_photo(current_file)
+				new_modtime  = File.mtime?(current_file)
+				if checksum_hash[new_checksum].nil? then checksum_hash[new_checksum] = {} end 
+				checksum_hash[new_checksum][:mod_time] = new_modtime
+				checksum_hash[new_checksum][:current_file] = current_file
+
 			else 
-				mtime_match = checksum_hash{|key, hash| hash[:mod_time] == File.mtime(current_file)
+				mtime_match = checksum_hash{|key, hash| hash[:mod_time] == File.mtime(current_file)}
 				if mtime_match.empty? 
 					# we have a new modtime. 
+					# WE MUST remove the old checksum key. 
+					# We need to populate a checksum key. 
+					
+					new_checksum = checksum_photo(current_file)
+					new_modtime  = File.mtime?(current_file)
+					###
+					# the hash is populated here. 
+					if checksum_hash[new_checksum].nil? then cheksum_hash[new_checksum] = {} end 
+					checksum_hash[new_checksum][:mod_time] = new_modtime
 				end
 			end 
 				
