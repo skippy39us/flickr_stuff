@@ -205,6 +205,9 @@ end
 def process_directory(base_dir)
 	create_photoset = true
 	current_photoset_id = ""
+	current_checksum = ""
+	upload_photo = false
+	tags = [] 
 	####
 	# Get the photosets
 	if debug.eql? 1 then puts "DEBUG: processing #{current_dir}" end 
@@ -263,7 +266,6 @@ def process_directory(base_dir)
 			####
 			# Go through each of the checksum_hash keys, and see if any of them refer
 			# to a filename that equals current_file. 
-
 			# If there are no filename matches, take a new checksum
 
 			# If it _DOES_ have a match, 
@@ -273,37 +275,46 @@ def process_directory(base_dir)
 			# If the mtimes are different  take a new checksum. 
 
 			# if they aren't, then we don't have to upload the file. 
+
+
 			####
 			# basically assigns the matching sub-hash to match if the current_file
 			# is already in place. 
 
-
-			########
-			########
-			########
-		
-			match = checksum_hash{|key, hash| hash[:current_file] == current_file}
+			match = checksum_hash.select{|key, hash| hash[:current_file] == current_file}
 			if match.empty?
+				###
+				# The file has not been checksum'd yet. 
 				# we need to populate a new checksum key. 
-				new_checksum = checksum_photo(current_file)
+				current_checksum = checksum_photo(current_file)
 				new_modtime  = File.mtime?(current_file)
-				if checksum_hash[new_checksum].nil? then checksum_hash[new_checksum] = {} end 
-				checksum_hash[new_checksum][:mod_time] = new_modtime
-				checksum_hash[new_checksum][:current_file] = current_file
+
+				if checksum_hash[current_checksum].nil? then checksum_hash[current_checksum] = {} end 
+				checksum_hash[current_checksum][:mod_time] = new_modtime
+				checksum_hash[current_checksum][:current_file] = current_file
+				upload_file = true
 
 			else 
-				mtime_match = checksum_hash{|key, hash| hash[:mod_time] == File.mtime(current_file)}
+				mtime_match = checksum_hash.select{|key, hash| hash[:mod_time] == File.mtime(current_file)}
 				if mtime_match.empty? 
+					#####
+					# If we're here, the file _does_ exist, but...
 					# we have a new modtime. 
 					# WE MUST remove the old checksum key. 
 					# We need to populate a checksum key. 
 					
-					new_checksum = checksum_photo(current_file)
+					current_checksum = checksum_photo(current_file)
 					new_modtime  = File.mtime?(current_file)
+
+					#####
+					# delete the old checksum from checksum_hash. 
+					if debug.eql? 1 then puts "DEBUG: removing checksum #{match.keys.first} from checksum_hash" end 
+					checksum_hash.delete(match.keys.first) 
 					###
 					# the hash is populated here. 
-					if checksum_hash[new_checksum].nil? then cheksum_hash[new_checksum] = {} end 
-					checksum_hash[new_checksum][:mod_time] = new_modtime
+					if checksum_hash[current_checksum].nil? then checksum_hash[current_checksum] = {} end 
+					checksum_hash[current_checksum][:mod_time] = new_modtime
+					upload_file = true
 				end
 			end 
 				
@@ -311,36 +322,24 @@ def process_directory(base_dir)
 
 			#####
 			# here are the tags.  Right now its just a checksum.
-			tags = [] 
-
-			current_checksum = checksum_photo(current_file) 
-
 			tags <<  current_checksum
 		
 				
-			
-			
-			#####
-			# add the current photo and its hash to the checksum_hash. This may be wrong, i fear. 	
-			
-			if checksum_hash[current_checksum].nil? then checksum_hash[current_checksum] = {} end 
-				
-			checksum_hash[current_checksum][:current_file] = current_file
-			checksum_hash[current_checksum][:mod_time] = File.mtime(current_file)
+			####
+			# Upload the file, finally. 
+			if upload_file.eql? true 
+				photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
+				if create_photoset.eql? true
+					current_photoset_id = create_photoset(current_dir, photo_id) 
+				end 	
 
-			photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
-			if create_photoset.eql? true
-				current_photoset_id = create_photoset(current_dir, photo_id) 
-			end 	
+				####
+				# add photo to a set.  	
+				add_photo_to_set(photo_id, current_photoset_id) 
+			end
 
 		
-			####
-			# add photo to a set.  	
-			add_photo_to_set(photo_id, current_photoset_id) 
 
-		
-			####
-			# if it does not exist, upload it using the upload_photo method. 
 		end
 	end 	
 end 
