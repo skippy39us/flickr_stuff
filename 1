@@ -174,7 +174,7 @@ end
 
 
 def add_photo_to_set(photo_id, current_photoset_id) 
-	if @debug.eql? 1 then puts "DEBUG: adding photo #{photo_id} to #{current_photoset_id}"  end 
+	#if @debug.eql? 1 then puts "DEBUG: putting #{photo} with id:#{photo_id} into set #{current_dir} with id: #{current_photoset_id}" end  
 	flickr.photosets.addPhoto :photoset_id => current_photoset_id, :photo_id => photo_id
 end 
 
@@ -194,8 +194,7 @@ end
 
 ####
 # Create a photoset and return the photoset id. 
-def make_photoset(current_dir, photo_id)
-	if @debug.eql? 1 then puts "DEBUG: flickr.photosets.create :title => #{current_dir}, :description => #{current_dir}, :primary_photo_id => #{photo_id}" end 
+def create_photoset(current_dir, photo_id)
 	current_photoset_hash = flickr.photosets.create :title => current_dir, :description => current_dir, :primary_photo_id => photo_id
 	current_photoset_id = current_photoset_hash["id"]
 	return current_photoset_id
@@ -207,7 +206,6 @@ def process_directory(base_dir)
 	create_photoset = true
 	current_photoset_id = ""
 	current_checksum = ""
-	current_dir = ""
 	upload_photo = false
 	tags = [] 
 	####
@@ -290,7 +288,7 @@ def process_directory(base_dir)
 				###
 				# The file has not been checksum'd yet. 
 				# we need to populate a new checksum key. 
-				if @debug.eql? 1 then puts "DEBUG: #{current_file} is a new file in these parts..."  end 
+				if @debug.eql? 1 then puts "DEBUG: #{current_file} is a new file in these parts..." 
 				current_checksum = checksum_photo(current_file)
 				new_modtime  = File.mtime(current_file)
 
@@ -335,7 +333,7 @@ def process_directory(base_dir)
 			if upload_file.eql? true 
 				photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
 				if create_photoset.eql? true
-					current_photoset_id = make_photoset(current_dir, photo_id) 
+					current_photoset_id = create_photoset(current_dir, photo_id) 
 				end 	
 
 				####
