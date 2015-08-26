@@ -112,6 +112,8 @@ def get_all_photos(userid)
 		if @debug.eql? 1 then puts "DEBUG: Page #{page}" end 
 		page = page + 1
 		current_page_photos = flickr.photos.search(:user_id => userid, :per_page => '500', :page => page) 
+		if @debug.eql? 1 then puts "DEBUG: current_page_photos = #{current_page_photos.inspect}" end 
+		if @debug.eql? 1 then puts "DEBUG: current_page_photos.length = #{current_page_photos.length}" end 
 
 		####
 		# Add those photos to the list of previously aquired photos. 
@@ -199,8 +201,12 @@ end
 # Create a photoset and return the photoset id. 
 def make_photoset(current_dir, photo_id)
 	if @debug.eql? 1 then puts "DEBUG: flickr.photosets.create :title => #{current_dir}, :description => #{current_dir}, :primary_photo_id => #{photo_id}" end 
+
 	current_photoset_hash = flickr.photosets.create :title => current_dir, :description => current_dir, :primary_photo_id => photo_id
+	if @debug.eql? 1 then puts "DEBUG: current_photoset_hash = #{current_photoset_hash.inspect}" end 
+
 	current_photoset_id = current_photoset_hash["id"]
+	if @debug.eql? 1 then puts "DEBUG: current_photoset_id = #{current_photoset_id}" end 
 	return current_photoset_id
 end
 
@@ -338,6 +344,7 @@ def process_directory(base_dir)
 				
 			####
 			# Upload the file, finally. 
+			if @debug.eql? 1 then puts "DEBUG: create_photoset = #{create_photoset}" end 
 			if upload_file.eql? true 
 				photo_id = upload_photo(current_file, current_file, current_file, tags, create_photoset, current_dir)
 				if create_photoset.eql? true
@@ -439,7 +446,7 @@ info = get_user_info(username)
 puts
 puts "#####"
 
-process_directory("/home/seidenbt/TMC1989")
+process_directory("/home/seidenbt/test")
 
 ####
 # This is every photo that we have. 
