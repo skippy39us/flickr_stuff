@@ -31,6 +31,8 @@ end
 @checksum_hash = {}
 if File.exists?("/home/seidenbt/flickr_yaml")
 	@checksum_hash = YAML.load_file("/home/seidenbt/flickr_yaml")	
+	if @debug.eql? 1 then puts "DEBUG: Found /home/seidenbt/flickr_yaml" end  
+	if @debug.eql? 1 then puts "DEBUG: here: #{@checksum_hash.inspect}" end 
 end 
 		
 
@@ -174,7 +176,7 @@ end
 
 
 def add_photo_to_set(photo_id, current_photoset_id) 
-	if @debug.eql? 1 then puts "DEBUG: adding photo #{photo_id} to #{current_photoset_id}"  end 
+	if @debug.eql? 1 then puts "\nDEBUG: adding photo #{photo_id} to #{current_photoset_id}"  end 
 	flickr.photosets.addPhoto :photoset_id => current_photoset_id, :photo_id => photo_id
 end 
 
@@ -189,6 +191,7 @@ def checksum_photo(photo)
 
 	checksum = Digest::SHA1.hexdigest(File.read(photo))
 	if @debug.eql? 1 then puts "DEBUG: checksum for #{photo} is #{checksum}" end 
+	if @debug.eql? 1 then puts "DEBUG: checksum class for #{photo} is #{checksum.class}" end 
 	return checksum 
 end
 
@@ -245,7 +248,7 @@ def process_directory(base_dir)
 
 			photosets.each do |current_set|
 				if current_set.title.eql? current_dir 
-					puts "#{current_dir} photoset exists!"
+					if @debug.eql? 1 then puts "DEBUG: #{current_dir} photoset exists!" end 
 					create_photoset = false
 					current_photoset_id = current_set.id
 				end 
@@ -286,31 +289,34 @@ def process_directory(base_dir)
 			# is already in place. 
 
 			match = @checksum_hash.select{|key, hash| hash[:current_file] == current_file}
+			if @debug.eql? 1 then puts "DEBUG: Here is the match for current file in the @checksum_hash: #{match.inspect}" end 
 			if match.empty?
 				###
 				# The file has not been checksum'd yet. 
 				# we need to populate a new checksum key. 
 				if @debug.eql? 1 then puts "DEBUG: #{current_file} is a new file in these parts..."  end 
 				current_checksum = checksum_photo(current_file)
-				new_modtime  = File.mtime(current_file)
-
+				new_modtime  = File.mtime(current_file).to_s
+				if @debug.eql? 1 then puts "DEBUG: new_modtime = #{new_modtime}" end 
 				if @checksum_hash[current_checksum].nil? then @checksum_hash[current_checksum] = {} end 
 				@checksum_hash[current_checksum][:mod_time] = new_modtime
 				@checksum_hash[current_checksum][:current_file] = current_file
 				upload_file = true
 
 			else 
+				#mtime_match = @checksum_hash.select{|key, hash| hash[:mod_time] == File.mtime(current_file).to_s}
 				mtime_match = @checksum_hash.select{|key, hash| hash[:mod_time] == File.mtime(current_file)}
+				if @debug.eql? 1 then puts "DEBUG: Here is the match for current file's mtime in the @checksum_hash: #{mtime_match.inspect}" end 
 				if mtime_match.empty? 
 					#####
 					# If we're here, the file _does_ exist, but...
 					# we have a new modtime. 
 					# WE MUST remove the old checksum key. 
 					# We need to populate a checksum key. 
-					
+					if @debug.eql? 1 then puts "DEBUG: mtime_match is empty. See: #{mtime_match}" end 	
 					current_checksum = checksum_photo(current_file)
-					new_modtime  = File.mtime(current_file)
-
+					new_modtime  = File.mtime(current_file).to_s
+					if @debug.eql? 1 then puts "DEBUG: new_modtime = #{new_modtime}" end 
 					#####
 					# delete the old checksum from @checksum_hash. 
 					if @debug.eql? 1 then puts "DEBUG: removing checksum #{match.keys.first} from @checksum_hash" end 
@@ -433,14 +439,16 @@ info = get_user_info(username)
 puts
 puts "#####"
 
-process_directory("/home/seidenbt/TMC1997")
+process_directory("/home/seidenbt/TMC1989")
 
 ####
 # This is every photo that we have. 
-all_photos = get_all_photos(info["id"])
+#all_photos = get_all_photos(info["id"])
 
+puts @checksum_hash.inspect
+YAML::ENGINE.yamler='syck'
 checksum_hash_yaml = YAML.dump(@checksum_hash)
-yamlfile = File.open("/home/seidenbt/flickr.yml", 'w')
+yamlfile = File.open("/home/seidenbt/flickr_yaml", 'w')
 yamlfile.puts checksum_hash_yaml
 yamlfile.close
 
