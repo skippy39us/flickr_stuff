@@ -177,6 +177,15 @@ def upload_photo(photo, title, description, tags, create_photo, current_dir)
 end 
 
 
+####
+# delete a photo. 
+def delete_photo(photo_id) 
+	if DEBUG.eql? 1 then puts "DEBUG: Deleting photo with photo id: #{photo_id}" end 
+	flickr.photos.delete(:photo_id => photo_id) 
+end 
+
+
+
 def add_photo_to_set(photo_id, current_photoset_id) 
 	if @debug.eql? 1 then puts "\nDEBUG: adding photo #{photo_id} to #{current_photoset_id}"  end 
 	flickr.photosets.addPhoto :photoset_id => current_photoset_id, :photo_id => photo_id
@@ -286,7 +295,10 @@ def process_directory(base_dir)
 			# check the ctime of current_file, and compare it to 
 			# @checksum_hash[current_checksum][:mod_time]. 
 
-			# If the ctimes are different  take a new checksum. 
+			# If the ctimes are different we need to: 
+			# 	- delete the old picture from flickr
+			# 	- take a new checksum of the current version of the file
+			# 	- upload the new file.  
 
 			# if they aren't, then we don't have to upload the file. 
 
@@ -319,16 +331,24 @@ def process_directory(base_dir)
 					#####
 					# If we're here, the file _does_ exist, but...
 					# we have a new modtime. 
+					# WE MUST delete the old file. 
 					# WE MUST remove the old checksum key. 
 					# We need to populate a checksum key. 
 					if @debug.eql? 1 then puts "DEBUG: ctime_match is empty. See: #{ctime_match}" end 	
 					current_checksum = checksum_photo(current_file)
 					new_modtime  = File.ctime(current_file).to_s
 					if @debug.eql? 1 then puts "DEBUG: new_modtime = #{new_modtime}" end 
+
+					#####
+					# delete the old file from flickr
+					delete_photo(@checksum_hash[current_checksum][:photo_id]) 
+
 					#####
 					# delete the old checksum from @checksum_hash. 
 					if @debug.eql? 1 then puts "DEBUG: removing checksum #{match.keys.first} from @checksum_hash" end 
 					@checksum_hash.delete(match.keys.first) 
+					
+
 					###
 					# the hash is populated here. 
 					if @checksum_hash[current_checksum].nil? then @checksum_hash[current_checksum] = {} end 
@@ -352,6 +372,10 @@ def process_directory(base_dir)
 				if create_photoset.eql? true
 					current_photoset_id = make_photoset(current_dir, photo_id) 
 				end 	
+
+				####
+				# keep the photo id in the hash as well. 
+				@checksum_hash[current_checksum][:photo_id] = photo_id
 
 				####
 				# add photo to a set.  	
