@@ -293,6 +293,8 @@ def process_directory(base_dir)
 			####
 			# basically assigns the matching sub-hash to match if the current_file
 			# is already in place. 
+      #
+      # We need to figure out how to create that checksum hash if it doesn't exist. 
       if @debug.eql? 1 then puts "DEBUG: here is the checksum_hash contents: #{@checksum_hash.inspect}" end
 			match = @checksum_hash.select{|key, hash| hash[:current_file] == current_file}
 			if @debug.eql? 1 then puts "DEBUG: Here is the match for current file in the @checksum_hash: #{match.inspect}" end 
