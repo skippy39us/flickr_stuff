@@ -2,7 +2,6 @@
 
 require 'digest/sha1'
 require './flickr_init' 
-require 'digest/sha1'
 require 'yaml'
 
 @debug = 1
@@ -19,7 +18,7 @@ username = "skippy39us"
 ####
 # Suck in the yaml of checksums, if it exists
 @checksum_hash = {}
-if File.exists?("/home/seidenbt/flickr_yaml")
+if File.exists?("/Users/seidenbt/flickr_yaml")
 	@checksum_hash = YAML.load_file("/home/seidenbt/flickr_yaml")	
 	if @debug.eql? 1 then puts "DEBUG: Found /home/seidenbt/flickr_yaml" end  
 	if @debug.eql? 1 then puts "DEBUG: here: #{@checksum_hash.inspect}" end 
@@ -32,7 +31,7 @@ info = get_user_info(username)
 puts
 puts "#####"
 
-process_directory("/home/seidenbt/test")
+process_directory("/Users/seidenbt/test")
 
 ####
 # This is every photo that we have. 
@@ -41,7 +40,7 @@ process_directory("/home/seidenbt/test")
 puts @checksum_hash.inspect
 YAML::ENGINE.yamler='syck'
 checksum_hash_yaml = YAML.dump(@checksum_hash)
-yamlfile = File.open("/home/seidenbt/flickr_yaml", 'w')
+yamlfile = File.open("/Users/seidenbt/flickr_yaml", 'w')
 yamlfile.puts checksum_hash_yaml
 yamlfile.close
 

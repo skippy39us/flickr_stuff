@@ -4,7 +4,6 @@ require 'flickraw'
 require 'digest/sha1'
 require 'find'
 require './flickr_init' 
-require 'digest/sha1'
 require 'yaml'
 
 @debug = 1
@@ -15,6 +14,7 @@ require 'yaml'
 ####
 # return a hash of the info regarding username
 def get_user_info(username) 
+  if @debug.eql? 1 then puts "DEBUG: username: #{username}" end 
 	info = flickr.people.findByUsername :username => username
 	if @debug.eql? 1 then puts "DEBUG: #{info.inspect}" end 
 	return info 
@@ -218,6 +218,8 @@ def process_directory(base_dir)
 	if @debug.eql? 1 then puts "DEBUG: processing #{base_dir}" end 
 	photosets = get_photo_sets()	 
 
+  ###
+  if @debug.eql? 1 then puts "DEBUG: photoset retrieval complete"  end 
 	photoset_ids = []
 	photoset_titles = []
 	photosets.each do |current_set|
@@ -291,7 +293,7 @@ def process_directory(base_dir)
 			####
 			# basically assigns the matching sub-hash to match if the current_file
 			# is already in place. 
-
+      if @debug.eql? 1 then puts "DEBUG: here is the checksum_hash contents: #{@checksum_hash.inspect}" end
 			match = @checksum_hash.select{|key, hash| hash[:current_file] == current_file}
 			if @debug.eql? 1 then puts "DEBUG: Here is the match for current file in the @checksum_hash: #{match.inspect}" end 
 			if match.empty?
